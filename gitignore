@@ -1,0 +1,34 @@
+# License server - NEVER commit this to GitHub
+license_server.py
+licenses.db
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Environment files - contain secrets
+.env
+*.env
+showtime.ini
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+*.swo

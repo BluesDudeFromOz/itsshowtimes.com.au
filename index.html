@@ -1,0 +1,1531 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ShowTime - Professional Performance Software for Musicians</title>
+    <meta name="description" content="ShowTime is the ultimate digital chord chart and setlist manager for live performers. Master/slave sync, instant transpose, karaoke, pre-show slideshows and video projection. Built in Adelaide, Australia.">
+    
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    
+    <!-- Stripe -->
+    <script src="https://js.stripe.com/v3/"></script>
+    
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: #12121a;
+            --bg-elevated: #1a1a25;
+            --cyan: #00BFFF;
+            --cyan-glow: rgba(0, 191, 255, 0.3);
+            --yellow: #FFD700;
+            --green: #00FF88;
+            --purple: #8B5CF6;
+            --text: #ffffff;
+            --text-muted: #8888aa;
+            --border: #2a2a3a;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        .bg-glow {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .bg-glow::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 20%, var(--cyan-glow) 0%, transparent 40%),
+                        radial-gradient(circle at 70% 80%, rgba(139, 92, 246, 0.15) 0%, transparent 40%);
+            animation: glowMove 20s ease-in-out infinite;
+        }
+
+        @keyframes glowMove {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(5%, 5%) rotate(5deg); }
+        }
+
+        /* Navigation */
+        nav {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 10, 15, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--cyan);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .logo-icon {
+            font-size: 32px;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 40px;
+            list-style: none;
+        }
+
+        .nav-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .nav-links a:hover {
+            color: var(--cyan);
+        }
+
+        .nav-cta {
+            background: var(--cyan);
+            color: var(--bg-dark);
+            padding: 12px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .nav-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 30px var(--cyan-glow);
+        }
+
+        /* Hero Section */
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 120px 40px 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-content {
+            max-width: 1200px;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 14px;
+            color: var(--cyan);
+            margin-bottom: 30px;
+            animation: fadeInUp 0.8s ease;
+        }
+
+        .hero h1 {
+            font-size: clamp(48px, 8vw, 80px);
+            font-weight: 800;
+            line-height: 1.1;
+            margin-bottom: 24px;
+            animation: fadeInUp 0.8s ease 0.1s both;
+        }
+
+        .hero h1 span {
+            background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-description {
+            font-size: 20px;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto 40px;
+            animation: fadeInUp 0.8s ease 0.2s both;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            animation: fadeInUp 0.8s ease 0.3s both;
+        }
+
+        .btn {
+            padding: 16px 36px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            text-decoration: none;
+            transition: all 0.3s;
+            cursor: pointer;
+            border: none;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--cyan);
+            color: var(--bg-dark);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px var(--cyan-glow);
+        }
+
+        .btn-secondary {
+            background: var(--bg-elevated);
+            color: var(--text);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--cyan);
+            background: var(--bg-card);
+        }
+
+        .hero-image {
+            margin-top: 60px;
+            animation: fadeInUp 0.8s ease 0.4s both;
+        }
+
+        .hero-image img {
+            max-width: 100%;
+            border-radius: 16px;
+            box-shadow: 0 40px 80px rgba(0, 0, 0, 0.5),
+                        0 0 0 1px var(--border);
+        }
+
+        /* Features Section */
+        .features {
+            padding: 120px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .section-header {
+            text-align: center;
+            margin-bottom: 80px;
+        }
+
+        .section-label {
+            color: var(--cyan);
+            font-weight: 600;
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: clamp(36px, 5vw, 52px);
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .section-description {
+            color: var(--text-muted);
+            font-size: 18px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--cyan);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 100%);
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 24px;
+        }
+
+        .feature-card h3 {
+            font-size: 22px;
+            font-weight: 600;
+            margin-bottom: 12px;
+        }
+
+        .feature-card p {
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        /* How It Works */
+        .how-it-works {
+            padding: 120px 40px;
+            background: var(--bg-card);
+            position: relative;
+            z-index: 1;
+        }
+
+        .steps {
+            display: flex;
+            gap: 40px;
+            max-width: 1200px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .step {
+            flex: 1;
+            min-width: 280px;
+            text-align: center;
+            padding: 40px 30px;
+        }
+
+        .step-number {
+            width: 70px;
+            height: 70px;
+            background: var(--bg-dark);
+            border: 2px solid var(--cyan);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--cyan);
+            margin: 0 auto 24px;
+        }
+
+        .step h3 {
+            font-size: 20px;
+            margin-bottom: 12px;
+        }
+
+        .step p {
+            color: var(--text-muted);
+            font-size: 15px;
+        }
+
+        /* Pricing Section */
+        .pricing {
+            padding: 120px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 30px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .pricing-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--cyan);
+            transform: scale(1.05);
+        }
+
+        .pricing-card.featured::before {
+            content: 'MOST POPULAR';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--cyan);
+            color: var(--bg-dark);
+            padding: 6px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .pricing-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+        }
+
+        .pricing-card.featured:hover {
+            transform: scale(1.05) translateY(-5px);
+        }
+
+        .pricing-tier {
+            font-size: 14px;
+            color: var(--cyan);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .pricing-name {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .pricing-price {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .pricing-price span {
+            font-size: 18px;
+            font-weight: 400;
+            color: var(--text-muted);
+        }
+
+        .pricing-description {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 30px;
+            padding-bottom: 30px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .pricing-features {
+            list-style: none;
+            margin-bottom: 30px;
+        }
+
+        .pricing-features li {
+            padding: 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+        }
+
+        .pricing-features li::before {
+            content: '✓';
+            color: var(--green);
+            font-weight: bold;
+        }
+
+        .pricing-features li.disabled {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        .pricing-features li.disabled::before {
+            content: '✗';
+            color: #ff6666;
+        }
+
+        .pricing-btn {
+            width: 100%;
+            padding: 16px;
+            font-size: 16px;
+        }
+
+        /* Testimonials */
+        /* Screenshots Gallery */
+        .screenshots {
+            padding: 120px 40px;
+            background: var(--bg-dark);
+            position: relative;
+            z-index: 1;
+        }
+
+        .screenshots-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+        }
+
+        .screenshot-tab {
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 14px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.2s;
+        }
+
+        .screenshot-tab:hover {
+            border-color: var(--cyan);
+            color: var(--text);
+        }
+
+        .screenshot-tab.active {
+            background: var(--cyan);
+            border-color: var(--cyan);
+            color: #000;
+            font-weight: 600;
+        }
+
+        .screenshots-display {
+            max-width: 1100px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .screenshot-panel {
+            display: none;
+        }
+
+        .screenshot-panel.active {
+            display: block;
+        }
+
+        .screenshot-panel img {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            box-shadow: 0 0 60px rgba(0, 191, 255, 0.12);
+        }
+
+        .screenshot-caption {
+            text-align: center;
+            margin-top: 20px;
+            color: var(--text-muted);
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        .screenshot-caption strong {
+            color: var(--cyan);
+        }
+
+        .testimonials {
+            padding: 120px 40px;
+            background: var(--bg-card);
+            position: relative;
+            z-index: 1;
+        }
+
+        .testimonials-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .testimonial {
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 40px;
+        }
+
+        .testimonial-text {
+            font-size: 18px;
+            font-style: italic;
+            margin-bottom: 24px;
+            line-height: 1.8;
+        }
+
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .testimonial-avatar {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+        }
+
+        .testimonial-name {
+            font-weight: 600;
+        }
+
+        .testimonial-role {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Download Section */
+        .download {
+            padding: 120px 40px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .download-content {
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .download-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 40px;
+        }
+
+        .download-btn {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 20px 32px;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.3s;
+        }
+
+        .download-btn:hover {
+            border-color: var(--cyan);
+            transform: translateY(-3px);
+        }
+
+        .download-btn-icon {
+            font-size: 36px;
+        }
+
+        .download-btn-text {
+            text-align: left;
+        }
+
+        .download-btn-label {
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .download-btn-platform {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        /* FAQ */
+        .faq {
+            padding: 120px 40px;
+            background: var(--bg-card);
+            position: relative;
+            z-index: 1;
+        }
+
+        .faq-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 24px 0;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 18px;
+            font-weight: 600;
+            text-align: left;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: inherit;
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 24px;
+            color: var(--cyan);
+            transition: transform 0.3s;
+        }
+
+        .faq-item.active .faq-question::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 300px;
+        }
+
+        .faq-answer p {
+            padding-bottom: 24px;
+            color: var(--text-muted);
+            line-height: 1.8;
+        }
+
+        /* Footer */
+        footer {
+            padding: 60px 40px;
+            border-top: 1px solid var(--border);
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .footer-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--cyan);
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 30px;
+            list-style: none;
+        }
+
+        .footer-links a {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        .footer-links a:hover {
+            color: var(--cyan);
+        }
+
+        .footer-copy {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 20px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding: 100px 20px 60px;
+            }
+
+            .hero-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .pricing-card.featured {
+                transform: none;
+            }
+
+            .pricing-card.featured:hover {
+                transform: translateY(-5px);
+            }
+
+            .footer-content {
+                flex-direction: column;
+                text-align: center;
+            }
+        }
+
+        /* Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 24px;
+            cursor: pointer;
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+        }
+
+        .modal p {
+            color: var(--text-muted);
+            margin-bottom: 24px;
+        }
+
+        #card-element {
+            background: var(--bg-dark);
+            padding: 16px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            margin-bottom: 20px;
+        }
+
+        #card-errors {
+            color: #ff6666;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-dark);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 16px;
+            font-family: inherit;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: var(--cyan);
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+
+    <!-- Navigation -->
+    <nav>
+        <a href="#" class="logo">
+            <img src="ShowDirectorLogo.png" alt="ShowTime" style="height: 44px; width: auto;">
+        </a>
+        <ul class="nav-links">
+            <li><a href="#features">Features</a></li>
+            <li><a href="#screenshots">Screenshots</a></li>
+            <li><a href="#pricing">Pricing</a></li>
+            <li><a href="#download">Download</a></li>
+            <li><a href="#faq">FAQ</a></li>
+        </ul>
+        <a href="#pricing" class="nav-cta">Get Started</a>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="hero-content">
+            <div class="hero-badge">🎬 Trusted by musicians across Australia</div>
+            <h1>Your Stage.<br><span>Your Show.</span></h1>
+            <p class="hero-description">
+                Professional chord chart and setlist manager for live performers.
+                Sync your whole band wirelessly, transpose instantly, run your pre-show on the projector,
+                and never lose your place again.
+            </p>
+            <div class="hero-buttons">
+                <a href="#pricing" class="btn btn-primary">Get Started</a>
+                <a href="#features" class="btn btn-secondary">See Features</a>
+            </div>
+            <div class="hero-image">
+                <img src="screenshot.png" alt="ShowTime in action — Amazing Grace in landscape chord chart view"
+                     style="width: 100%; border-radius: 12px; border: 1px solid var(--border);
+                            box-shadow: 0 0 60px rgba(0, 191, 255, 0.15);">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features" id="features">
+        <div class="section-header">
+            <div class="section-label">Features</div>
+            <h2 class="section-title">Everything You Need on Stage</h2>
+            <p class="section-description">
+                Built by a working musician, for working musicians. ShowTime handles the tech so you can focus on the music.
+            </p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔄</div>
+                <h3>Master/Slave Sync</h3>
+                <p>Connect your entire band wirelessly. When you change songs, transpose, or turn the page, every device updates instantly. No app install — band members just open a browser.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎵</div>
+                <h3>Instant Transpose</h3>
+                <p>Transpose any chart up or down with one tap. Built-in Eb and Bb instrument modes so horn players and keyboard players always see their own key automatically.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📽️</div>
+                <h3>Pre-Show & Intermission Slides</h3>
+                <p>Load images or videos for your pre-show and intermission. Hit one button and they play on the projector automatically — complete with Ken Burns effects and transitions. Your roadie can run it from any device.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎤</div>
+                <h3>Karaoke System</h3>
+                <p>Full karaoke subsystem with CDG+MP3 playback, patron QR code registration, queue management, and pitch shifting. Turn any gig into a karaoke night with no extra hardware.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🦶</div>
+                <h3>Foot Pedal Navigation</h3>
+                <p>Hands-free page turns and song navigation via Bluetooth foot pedals. Supports 3-pedal and 4-pedal controllers. Keep your hands on the instrument, not the tablet.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">✏️</div>
+                <h3>Annotations</h3>
+                <p>Add personal notes, cues, and reminders directly on your charts — with instrument-specific colour coding. Drag them anywhere on the page and they stay put.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📱</div>
+                <h3>Audience Song Requests</h3>
+                <p>Generate a QR code your audience can scan to browse your song list and request songs. Perfect for pub residencies, functions, and open mic nights.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎼</div>
+                <h3>Multiple Chart Formats</h3>
+                <p>HTML chord charts, PDF fakebook pages, and MusicXML sheet music all in one song. Switch between arrangements in one tap — jazz chart, simplified chart, or the full score.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎹</div>
+                <h3>Circle of Fifths</h3>
+                <p>Interactive Circle of Fifths popup for quick key reference, chord relationships, and transposition guidance — right there on your performance screen when you need it.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works -->
+    <section class="how-it-works">
+        <div class="section-header">
+            <div class="section-label">How It Works</div>
+            <h2 class="section-title">Up and Running in Minutes</h2>
+        </div>
+        <div class="steps">
+            <div class="step">
+                <div class="step-number">1</div>
+                <h3>Import Your Charts</h3>
+                <p>Paste from Word, import RTF files, link PDF fakebook pages, or type directly. Your existing chord charts work perfectly — 3,000+ song libraries are no problem.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">2</div>
+                <h3>Build Your Setlists</h3>
+                <p>Organise songs into playlists for each gig. Drag to reorder on the night. Add pre-show images and intermission slides to each playlist.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">3</div>
+                <h3>Connect Your Band</h3>
+                <p>ShowTime runs on your laptop or Raspberry Pi. Band members connect via their phone or tablet browser — no app install, no accounts. You control, they follow.</p>
+            </div>
+            <div class="step">
+                <div class="step-number">4</div>
+                <h3>Play the Show</h3>
+                <p>Navigate with keyboard, foot pedal, or touch. The roadie runs the projector from their phone. Everyone stays in sync. Focus on the music.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Pricing Section -->
+    <section class="pricing" id="pricing">
+        <div class="section-header">
+            <div class="section-label">Pricing</div>
+            <h2 class="section-title">Simple, Fair Pricing</h2>
+            <p class="section-description">
+                Start free, upgrade when you're ready. No subscriptions on the Pro plan — pay once, yours forever.
+            </p>
+        </div>
+        <div class="pricing-grid">
+            <!-- Free Tier -->
+            <div class="pricing-card">
+                <div class="pricing-tier">Starter</div>
+                <div class="pricing-name">Free</div>
+                <div class="pricing-price">$0</div>
+                <div class="pricing-description">Try ShowTime with your own songs</div>
+                <ul class="pricing-features">
+                    <li>Up to 20 songs</li>
+                    <li>3 playlists</li>
+                    <li>Chord chart display</li>
+                    <li>Page view modes (portrait, landscape, flip)</li>
+                    <li>Circle of Fifths reference</li>
+                    <li class="disabled">Transpose</li>
+                    <li class="disabled">Master/Slave sync</li>
+                    <li class="disabled">Foot pedal navigation</li>
+                    <li class="disabled">Video projection</li>
+                    <li class="disabled">Karaoke system</li>
+                </ul>
+                <a href="#download" class="btn btn-secondary pricing-btn">Download Free</a>
+            </div>
+
+            <!-- Band Tier -->
+            <div class="pricing-card featured">
+                <div class="pricing-tier">Most Popular</div>
+                <div class="pricing-name">Band License</div>
+                <div class="pricing-price">$80 <span>/year</span></div>
+                <div class="pricing-description">Everything a working band needs</div>
+                <ul class="pricing-features">
+                    <li>Unlimited songs & playlists</li>
+                    <li>Instant transpose (Eb/Bb modes)</li>
+                    <li>Master/Slave wireless sync</li>
+                    <li>Foot pedal navigation</li>
+                    <li>Annotations with instrument colours</li>
+                    <li>Audience song requests (QR code)</li>
+                    <li>PDF fakebook page charts</li>
+                    <li>Priority support</li>
+                    <li class="disabled">Pre-show/Intermission slides</li>
+                    <li class="disabled">Karaoke system</li>
+                </ul>
+                <button class="btn btn-primary pricing-btn" onclick="openCheckout('band')">Get Band License</button>
+            </div>
+
+            <!-- Pro Tier -->
+            <div class="pricing-card">
+                <div class="pricing-tier">Professional</div>
+                <div class="pricing-name">Pro License</div>
+                <div class="pricing-price">$150 <span>once</span></div>
+                <div class="pricing-description">One-time purchase, lifetime updates</div>
+                <ul class="pricing-features">
+                    <li>Everything in Band</li>
+                    <li>Pre-show & intermission slideshows</li>
+                    <li>Video projection with transitions</li>
+                    <li>Karaoke system (CDG+MP3, pitch shift)</li>
+                    <li>Multiple band profiles</li>
+                    <li>MusicXML sheet music display</li>
+                    <li>DMX lighting control (coming soon)</li>
+                    <li>MIDI control (coming soon)</li>
+                </ul>
+                <button class="btn btn-primary pricing-btn" onclick="openCheckout('pro')">Get Pro License</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Section -->
+    <section class="screenshots" id="screenshots">
+        <div class="section-header">
+            <div class="section-label">Screenshots</div>
+            <h2 class="section-title">See It in Action</h2>
+            <p class="section-description">Real software, real gigs, real chord charts.</p>
+        </div>
+
+        <div class="screenshots-tabs">
+            <button class="screenshot-tab active" onclick="showScreenshot('chart')">Chord Chart View</button>
+            <button class="screenshot-tab" onclick="showScreenshot('editor')">Chart Editor</button>
+            <button class="screenshot-tab" onclick="showScreenshot('search')">Song Search</button>
+            <button class="screenshot-tab" onclick="showScreenshot('cof')">Circle of Fifths</button>
+            <button class="screenshot-tab" onclick="showScreenshot('metadata')">Song Metadata</button>
+            <button class="screenshot-tab" onclick="showScreenshot('links')">Links &amp; Media</button>
+        </div>
+
+        <div class="screenshots-display">
+            <div class="screenshot-panel active" id="ss-chart">
+                <img src="screenshot.png" alt="ShowTime landscape chord chart view — Amazing Grace">
+                <p class="screenshot-caption">
+                    <strong>Landscape two-column view</strong> — full chord chart with lyrics, ring binder spine,
+                    and the complete toolbar. Supports portrait, landscape, and page-flip book modes.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-editor">
+                <img src="screenshot5.png" alt="ShowTime chart editor with full toolbar">
+                <p class="screenshot-caption">
+                    <strong>Built-in chart editor</strong> — font controls, bold/italic/super/subscript, section colour
+                    buttons (Intro, Verse, Chorus, Bridge, Outro, Solo), page breaks, chord/lyric size toggles,
+                    and a music symbols panel with repeats, D.S., D.C., bar counts, and time signatures.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-search">
+                <img src="screenshot6.png" alt="ShowTime song search with QR code to connect band members">
+                <p class="screenshot-caption">
+                    <strong>Song search &amp; band connect</strong> — instant search across your entire library with artist
+                    names and playlist usage counts. The QR code on the right lets band members connect
+                    instantly from any phone or tablet — no app install, just scan and open a browser.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-cof">
+                <img src="screenshot4.png" alt="ShowTime Circle of Fifths popup with improvisation tabs">
+                <p class="screenshot-caption">
+                    <strong>Circle of Fifths popup</strong> — interactive reference with tabs for Basic, Improvisation,
+                    Major Scale Chords, 2-5-1 and 6-2-5-1 progressions. Note the status bar:
+                    <strong>Connected — Slave Mode</strong>, showing live master/slave sync in action.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-metadata">
+                <img src="screenshot3.png" alt="ShowTime song metadata editor">
+                <p class="screenshot-caption">
+                    <strong>Song metadata</strong> — store key, BPM, time signature, Alesis SR-18 drum machine pattern,
+                    piano setting, genre, and personal notes alongside every song.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-links">
+                <img src="screenshot2.png" alt="ShowTime useful links and song media manager">
+                <p class="screenshot-caption">
+                    <strong>Links &amp; media per song</strong> — attach YouTube tutorials, Spotify tracks, sheet music PDFs,
+                    or any URL. Upload images and videos for projection during the song.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials -->
+    <section class="testimonials">
+        <div class="section-header">
+            <div class="section-label">Testimonials</div>
+            <h2 class="section-title">Loved by Musicians</h2>
+        </div>
+        <div class="testimonials-grid">
+            <div class="testimonial">
+                <p class="testimonial-text">"Finally, software that understands what performers actually need. The master/slave sync alone has transformed our rehearsals and gigs."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">JM</div>
+                    <div>
+                        <div class="testimonial-name">James Mitchell</div>
+                        <div class="testimonial-role">Jazz Pianist, Adelaide</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <p class="testimonial-text">"We used to waste 10 minutes per gig shuffling paper charts. Now everyone's on the same page - literally. Game changer for our pub residency."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">SK</div>
+                    <div>
+                        <div class="testimonial-name">Sarah Kelly</div>
+                        <div class="testimonial-role">Vocalist, Cover Band</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <p class="testimonial-text">"The transpose feature saves me every time a singer asks to change key. One click and we're good to go. Worth every cent."</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">DT</div>
+                    <div>
+                        <div class="testimonial-name">David Thompson</div>
+                        <div class="testimonial-role">Keys & Guitar, Function Band</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download Section -->
+    <section class="download" id="download">
+        <div class="download-content">
+            <div class="section-label">Get Started</div>
+            <h2 class="section-title">Ready to Transform Your Shows?</h2>
+            <p class="section-description">
+                ShowTime runs as a local web server on your device — Windows, Mac, Linux, or Raspberry Pi.
+                Band members connect from any browser, no install required.
+            </p>
+            <div class="download-buttons">
+                <a href="#" class="download-btn">
+                    <div class="download-btn-icon">🪟</div>
+                    <div class="download-btn-text">
+                        <div class="download-btn-label">Download for</div>
+                        <div class="download-btn-platform">Windows</div>
+                    </div>
+                </a>
+                <a href="#" class="download-btn">
+                    <div class="download-btn-icon">🍎</div>
+                    <div class="download-btn-text">
+                        <div class="download-btn-label">Download for</div>
+                        <div class="download-btn-platform">macOS</div>
+                    </div>
+                </a>
+                <a href="#" class="download-btn">
+                    <div class="download-btn-icon">🐧</div>
+                    <div class="download-btn-text">
+                        <div class="download-btn-label">Download for</div>
+                        <div class="download-btn-platform">Linux / Raspberry Pi</div>
+                    </div>
+                </a>
+            </div>
+            <p style="margin-top: 24px; color: var(--text-muted); font-size: 14px;">
+                Runs on Python + Flask. Raspberry Pi 5 recommended for the stage — small, silent, reliable.
+            </p>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq" id="faq">
+        <div class="section-header">
+            <div class="section-label">FAQ</div>
+            <h2 class="section-title">Frequently Asked Questions</h2>
+        </div>
+        <div class="faq-list">
+            <div class="faq-item">
+                <button class="faq-question">How does the Master/Slave sync work?</button>
+                <div class="faq-answer">
+                    <p>ShowTime runs a local web server on your main device (the Master — typically a laptop or Raspberry Pi). Other band members open a browser on their phone or tablet and type in your device's IP address. When you change songs, transpose, or turn the page, every connected screen updates instantly over your local WiFi network. No internet required, no accounts, no app installs.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">What hardware do I need?</button>
+                <div class="faq-answer">
+                    <p>The Master device (where you run ShowTime) can be any Windows, Mac, or Linux machine — or a Raspberry Pi 5 for a compact, silent stage solution. Band members just need any device with a browser: phone, tablet, or laptop. For projection, connect any HDMI display or TV. A small WiFi router dedicated to the band is recommended for reliable sync at a venue.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Do I need internet for gigs?</button>
+                <div class="faq-answer">
+                    <p>No. ShowTime runs entirely offline. You just need a local WiFi network for band members to connect to your Master device — even a cheap travel router or mobile hotspot works perfectly. No cloud dependency, no lag, no relying on the venue's WiFi.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">What file formats can I import?</button>
+                <div class="faq-answer">
+                    <p>You can paste directly from Word, import RTF files, or type and edit in the built-in editor. PDF fakebook pages can be added as chart images. MusicXML files display as full sheet music via OpenSheetMusicDisplay. The editor preserves your chord colours (yellow chords, cyan section headers, etc.) and existing formatting.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">What's the difference between Band and Pro?</button>
+                <div class="faq-answer">
+                    <p>Band ($80/year) covers everything most gigging musicians need — unlimited songs, transpose, wireless sync, foot pedal navigation, and annotations. Pro ($150 one-time) adds the projector features: pre-show and intermission slideshows, video projection with effects, the full karaoke system, and multiple band profiles. Pro is a one-time purchase with lifetime updates included.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">How does the pre-show slideshow work?</button>
+                <div class="faq-answer">
+                    <p>Upload images or videos to any playlist and tag them as Pre-Show, Intermission, or Post-Show. When you're ready, hit the Pre-Show button next to that playlist (from any connected device — your roadie can do it from their phone). The slides play on the projector automatically with your chosen transitions and timing. When the band starts, selecting the first song stops the pre-show instantly.</p>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">How do I activate my license?</button>
+                <div class="faq-answer">
+                    <p>After purchase you'll receive a license key by email. Enter it in ShowTime's settings and it activates immediately. Each license is tied to a machine ID for security, but you can transfer it if you change computers.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <div class="footer-content">
+            <div class="footer-logo"><img src="ShowDirectorLogo.png" alt="ShowTime" style="height: 50px; width: auto;"></div>
+            <ul class="footer-links">
+                <li><a href="#features">Features</a></li>
+                <li><a href="#pricing">Pricing</a></li>
+                <li><a href="#download">Download</a></li>
+                <li><a href="mailto:support@itshowtime.com.au">Support</a></li>
+            </ul>
+            <div class="footer-copy">© 2026 ShowTime. Made in Adelaide, Australia.</div>
+        </div>
+    </footer>
+
+    <!-- Checkout Modal -->
+    <div class="modal-overlay" id="checkoutModal">
+        <div class="modal">
+            <button class="modal-close" onclick="closeCheckout()">×</button>
+            <h2 id="checkoutTitle">Complete Your Purchase</h2>
+            <p id="checkoutDescription">You're purchasing the Band License ($80/year)</p>
+            
+            <div class="form-group">
+                <label for="customerEmail">Email Address</label>
+                <input type="email" id="customerEmail" placeholder="your@email.com" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="customerName">Full Name</label>
+                <input type="text" id="customerName" placeholder="John Smith" required>
+            </div>
+            
+            <div id="card-element"></div>
+            <div id="card-errors" role="alert"></div>
+            
+            <button class="btn btn-primary" style="width: 100%;" onclick="processPayment()" id="payBtn">
+                Pay Now
+            </button>
+            
+            <p style="text-align: center; margin-top: 16px; font-size: 12px; color: var(--text-muted);">
+                🔒 Secured by Stripe. Your payment info never touches our servers.
+            </p>
+        </div>
+    </div>
+
+    <script>
+        // Screenshots tab switcher
+        function showScreenshot(id) {
+            document.querySelectorAll('.screenshot-panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.screenshot-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('ss-' + id).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // FAQ Accordion
+        document.querySelectorAll('.faq-question').forEach(button => {
+            button.addEventListener('click', () => {
+                const item = button.parentElement;
+                const isActive = item.classList.contains('active');
+                
+                // Close all other items
+                document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+                
+                // Toggle current item
+                if (!isActive) {
+                    item.classList.add('active');
+                }
+            });
+        });
+
+        // Stripe Configuration
+        // IMPORTANT: Replace with your actual Stripe publishable key
+        const STRIPE_PUBLISHABLE_KEY = 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY';
+        
+        // Price IDs from your Stripe dashboard
+        const PRICE_IDS = {
+            band: 'price_BAND_PRICE_ID',  // Replace with actual price ID
+            pro: 'price_PRO_PRICE_ID'      // Replace with actual price ID
+        };
+
+        let stripe = null;
+        let cardElement = null;
+        let selectedPlan = null;
+
+        // Initialize Stripe (only when needed)
+        function initStripe() {
+            if (!stripe && STRIPE_PUBLISHABLE_KEY !== 'pk_test_YOUR_STRIPE_PUBLISHABLE_KEY') {
+                stripe = Stripe(STRIPE_PUBLISHABLE_KEY);
+                const elements = stripe.elements();
+                cardElement = elements.create('card', {
+                    style: {
+                        base: {
+                            color: '#ffffff',
+                            fontFamily: 'Outfit, sans-serif',
+                            fontSize: '16px',
+                            '::placeholder': { color: '#8888aa' }
+                        }
+                    }
+                });
+                cardElement.mount('#card-element');
+                
+                cardElement.on('change', function(event) {
+                    const displayError = document.getElementById('card-errors');
+                    displayError.textContent = event.error ? event.error.message : '';
+                });
+            }
+        }
+
+        function openCheckout(plan) {
+            selectedPlan = plan;
+            
+            const titles = {
+                band: 'Band License - $80/year',
+                pro: 'Pro License - $150 (one-time)'
+            };
+            
+            document.getElementById('checkoutTitle').textContent = titles[plan];
+            document.getElementById('checkoutDescription').textContent = 
+                plan === 'band' 
+                    ? 'Annual subscription. Cancel anytime.' 
+                    : 'One-time purchase. Lifetime updates included.';
+            
+            document.getElementById('checkoutModal').classList.add('active');
+            
+            // Initialize Stripe when modal opens
+            initStripe();
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkoutModal').classList.remove('active');
+        }
+
+        async function processPayment() {
+            const email = document.getElementById('customerEmail').value;
+            const name = document.getElementById('customerName').value;
+            
+            if (!email || !name) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+            if (!stripe) {
+                // Stripe not configured - show demo message
+                alert('🎉 Demo Mode\n\nStripe is not configured yet.\n\nTo enable payments:\n1. Create a Stripe account\n2. Add your publishable key\n3. Create products and price IDs\n\nEmail: ' + email + '\nPlan: ' + selectedPlan);
+                closeCheckout();
+                return;
+            }
+            
+            const payBtn = document.getElementById('payBtn');
+            payBtn.disabled = true;
+            payBtn.textContent = 'Processing...';
+            
+            try {
+                // Create payment intent on your server
+                const response = await fetch('/api/create-payment-intent', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        plan: selectedPlan,
+                        email: email,
+                        name: name
+                    })
+                });
+                
+                const { clientSecret, error } = await response.json();
+                
+                if (error) {
+                    throw new Error(error);
+                }
+                
+                // Confirm payment
+                const result = await stripe.confirmCardPayment(clientSecret, {
+                    payment_method: {
+                        card: cardElement,
+                        billing_details: { name, email }
+                    }
+                });
+                
+                if (result.error) {
+                    throw new Error(result.error.message);
+                }
+                
+                // Payment successful!
+                alert('🎉 Payment successful!\n\nYour license key has been sent to ' + email + '\n\nThank you for supporting ShowTime!');
+                closeCheckout();
+                
+            } catch (err) {
+                document.getElementById('card-errors').textContent = err.message;
+            } finally {
+                payBtn.disabled = false;
+                payBtn.textContent = 'Pay Now';
+            }
+        }
+
+        // Close modal on outside click
+        document.getElementById('checkoutModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCheckout();
+            }
+        });
+
+        // Smooth scroll for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            });
+        });
+    </script>
+</body>
+</html>

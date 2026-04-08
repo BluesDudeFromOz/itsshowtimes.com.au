@@ -564,6 +564,9 @@
 
         .screenshot-panel img {
             width: 100%;
+            max-width: 900px;
+            display: block;
+            margin: 0 auto;
             border-radius: 12px;
             border: 1px solid var(--border);
             box-shadow: 0 0 60px rgba(0, 191, 255, 0.12);
@@ -1323,7 +1326,7 @@
                     <li class="disabled">Foot pedal navigation</li>
                     <li class="disabled">Video projection</li>
                 </ul>
-                <a href="#download" class="btn btn-secondary pricing-btn">Download Free</a>
+                <a href="#" class="btn btn-secondary pricing-btn">Start Free — No Download</a>
             </div>
 
             <!-- Band Tier -->
@@ -1757,34 +1760,28 @@
             <div class="section-label">Get Started</div>
             <h2 class="section-title">Ready to Transform Your Shows?</h2>
             <p class="section-description">
-                ShowTime runs as a local web server on your device — Windows, Mac, Linux, or Raspberry Pi.
-                Band members connect from any browser, no install required.
+                The <strong style="color:var(--cyan)">Free tier</strong> runs entirely in the cloud — sign up and start immediately, no download needed.
+                <br>Paid licenses include the <strong style="color:var(--yellow)">Windows desktop app</strong> for running ShowTime as your own local server on stage.
             </p>
             <div class="download-buttons">
-                <a href="#" class="download-btn">
+                <a href="#pricing" class="download-btn" style="border-color:var(--cyan)">
+                    <div class="download-btn-icon">☁️</div>
+                    <div class="download-btn-text">
+                        <div class="download-btn-label">Start free on</div>
+                        <div class="download-btn-platform">Cloud (SaaS)</div>
+                    </div>
+                </a>
+                <a href="#pricing" class="download-btn" style="position:relative; overflow:hidden;">
+                    <div style="position:absolute; top:6px; right:8px; font-size:10px; background:var(--yellow); color:#000; border-radius:4px; padding:1px 6px; font-weight:700; letter-spacing:0.5px;">PAID</div>
                     <div class="download-btn-icon">🪟</div>
                     <div class="download-btn-text">
                         <div class="download-btn-label">Download for</div>
                         <div class="download-btn-platform">Windows</div>
                     </div>
                 </a>
-                <a href="#" class="download-btn">
-                    <div class="download-btn-icon">🍎</div>
-                    <div class="download-btn-text">
-                        <div class="download-btn-label">Download for</div>
-                        <div class="download-btn-platform">macOS</div>
-                    </div>
-                </a>
-                <a href="#" class="download-btn">
-                    <div class="download-btn-icon">🐧</div>
-                    <div class="download-btn-text">
-                        <div class="download-btn-label">Download for</div>
-                        <div class="download-btn-platform">Linux / Raspberry Pi</div>
-                    </div>
-                </a>
             </div>
             <p style="margin-top: 24px; color: var(--text-muted); font-size: 14px;">
-                Runs on Python + Flask. Raspberry Pi 5 recommended for the stage — small, silent, reliable.
+                Windows app runs on Python + Flask locally — your band connects from any browser via WiFi. No internet required on stage.
             </p>
         </div>
     </section>
@@ -1981,7 +1978,7 @@
             document.querySelectorAll('.screenshot-panel').forEach(p => p.classList.remove('active'));
             document.querySelectorAll('.screenshot-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('ss-' + id).classList.add('active');
-            event.target.classList.add('active');
+            event.target.closest('.screenshot-tab').classList.add('active');
         }
 
         // FAQ Accordion

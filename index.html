@@ -123,6 +123,17 @@
             color: var(--cyan);
         }
 
+        .nav-copyright {
+            font-size: 11px;
+            color: #444;
+            white-space: nowrap;
+            letter-spacing: 0.3px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-copyright { display: none; }
+        }
+
         .nav-cta {
             background: var(--cyan);
             color: var(--bg-dark);
@@ -1163,6 +1174,7 @@
             <li><a href="#download">Download</a></li>
             <li><a href="#faq">FAQ</a></li>
         </ul>
+        <span class="nav-copyright">© 2026 ShowTime · Made in Adelaide 🇦🇺</span>
         <a href="#pricing" class="nav-cta">Get Started</a>
     </nav>
 

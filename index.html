@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -1759,22 +1759,22 @@
                 </div>
             </div>
             <div class="testimonial">
-                <p class="testimonial-text">"We used to waste 10 minutes per gig shuffling paper charts. Now everyone's on the same page - literally. Game changer for our pub residency."</p>
+                <p class="testimonial-text">"<!-- PLACEHOLDER — awaiting quote from Janine -->"</p>
                 <div class="testimonial-author">
-                    <div class="testimonial-avatar">SK</div>
+                    <div class="testimonial-avatar">JS</div>
                     <div>
-                        <div class="testimonial-name">Sarah Kelly</div>
-                        <div class="testimonial-role">Vocalist, Cover Band</div>
+                        <div class="testimonial-name">Janine Saundercock</div>
+                        <div class="testimonial-role">Vocalist, Burt in a Skirt</div>
                     </div>
                 </div>
             </div>
             <div class="testimonial">
-                <p class="testimonial-text">"The transpose feature saves me every time a singer asks to change key. One click and we're good to go. Worth every cent."</p>
+                <p class="testimonial-text">"<!-- PLACEHOLDER — awaiting quote from John Swan -->"</p>
                 <div class="testimonial-author">
-                    <div class="testimonial-avatar">DT</div>
+                    <div class="testimonial-avatar">JS</div>
                     <div>
-                        <div class="testimonial-name">David Thompson</div>
-                        <div class="testimonial-role">Keys & Guitar, Function Band</div>
+                        <div class="testimonial-name">John Swan <span style="color:var(--text-muted); font-weight:400;">(Swanee)</span></div>
+                        <div class="testimonial-role">Australian Rock Legend</div>
                     </div>
                 </div>
             </div>
@@ -2179,3 +2179,413 @@
                 const target = document.querySelector(this.getAttribute('href'));
                 if (target) {
   
+
+                    target.scrollIntoView({ behavior: 'smooth' });
+                }
+            });
+        });
+    </script>
+
+    <!-- ══════════════════════════════════════════════════════
+         AI Support Chat Widget
+         Backend: ShowTime Flask app  /api/support-chat
+         Set CHAT_API_URL to your deployed ShowTime server URL.
+    ═══════════════════════════════════════════════════════════ -->
+    <style>
+        /* Chat bubble & panel */
+        #st-chat-bubble {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--cyan);
+            box-shadow: 0 0 20px var(--cyan-glow), 0 4px 16px rgba(0,0,0,0.5);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 9999;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: none;
+            color: #000;
+        }
+        #st-chat-bubble:hover {
+            transform: scale(1.1);
+            box-shadow: 0 0 32px var(--cyan-glow), 0 6px 20px rgba(0,0,0,0.6);
+        }
+        #st-chat-bubble .st-bubble-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: var(--yellow);
+            color: #000;
+            font-size: 10px;
+            font-weight: 700;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+
+        #st-chat-panel {
+            position: fixed;
+            bottom: 96px;
+            right: 28px;
+            width: 360px;
+            max-height: 520px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(0,191,255,0.15);
+            display: flex;
+            flex-direction: column;
+            z-index: 9998;
+            overflow: hidden;
+            transform: scale(0.85) translateY(20px);
+            opacity: 0;
+            pointer-events: none;
+            transition: transform 0.22s cubic-bezier(.34,1.56,.64,1), opacity 0.18s ease;
+        }
+        #st-chat-panel.open {
+            transform: scale(1) translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        #st-chat-header {
+            padding: 14px 16px 12px;
+            background: linear-gradient(135deg, #0d2030 0%, #0a0a1a 100%);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .st-chat-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--cyan), var(--purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        .st-chat-header-info { flex: 1; }
+        .st-chat-header-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .st-chat-header-status {
+            font-size: 11px;
+            color: var(--green);
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .st-chat-header-status::before {
+            content: '';
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+        #st-chat-close {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+            transition: color 0.15s;
+        }
+        #st-chat-close:hover { color: #fff; }
+
+        #st-chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px 14px 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+        .st-msg {
+            max-width: 85%;
+            font-size: 13.5px;
+            line-height: 1.5;
+            padding: 9px 13px;
+            border-radius: 12px;
+            word-break: break-word;
+        }
+        .st-msg-bot {
+            background: var(--bg-elevated);
+            color: var(--text);
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+        .st-msg-user {
+            background: var(--cyan);
+            color: #000;
+            font-weight: 500;
+            border-bottom-right-radius: 4px;
+            align-self: flex-end;
+        }
+        .st-msg-bot strong { color: var(--cyan); }
+        .st-msg-bot em { color: var(--text-muted); font-style: normal; }
+
+        .st-typing {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+            padding: 10px 14px;
+            background: var(--bg-elevated);
+            border-radius: 12px;
+            border-bottom-left-radius: 4px;
+            align-self: flex-start;
+        }
+        .st-typing span {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: var(--text-muted);
+            animation: st-bounce 1.2s infinite;
+        }
+        .st-typing span:nth-child(2) { animation-delay: 0.2s; }
+        .st-typing span:nth-child(3) { animation-delay: 0.4s; }
+        @keyframes st-bounce {
+            0%, 60%, 100% { transform: translateY(0); }
+            30% { transform: translateY(-6px); background: var(--cyan); }
+        }
+
+        #st-chat-input-row {
+            padding: 10px 12px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            gap: 8px;
+            background: var(--bg-card);
+        }
+        #st-chat-input {
+            flex: 1;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 9px 12px;
+            color: #fff;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.15s;
+            resize: none;
+            max-height: 80px;
+        }
+        #st-chat-input:focus { border-color: var(--cyan); }
+        #st-chat-input::placeholder { color: var(--text-muted); }
+        #st-chat-send {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--cyan);
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            align-self: flex-end;
+            transition: background 0.15s, transform 0.1s;
+            font-size: 16px;
+        }
+        #st-chat-send:hover { background: #00d4ff; transform: scale(1.05); }
+        #st-chat-send:disabled { background: var(--border); cursor: not-allowed; transform: none; }
+
+        #st-chat-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+            padding: 0 12px 10px;
+        }
+        .st-suggestion {
+            font-size: 11px;
+            padding: 5px 10px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            color: var(--text-muted);
+            background: none;
+            cursor: pointer;
+            font-family: 'Outfit', sans-serif;
+            transition: border-color 0.15s, color 0.15s;
+            white-space: nowrap;
+        }
+        .st-suggestion:hover { border-color: var(--cyan); color: var(--cyan); }
+
+        @media (max-width: 420px) {
+            #st-chat-panel { width: calc(100vw - 24px); right: 12px; bottom: 84px; }
+            #st-chat-bubble { right: 16px; bottom: 16px; }
+        }
+    </style>
+
+    <!-- Chat bubble button -->
+    <button id="st-chat-bubble" onclick="stChatToggle()" aria-label="Open support chat">
+        <span id="st-bubble-icon">💬</span>
+        <span class="st-bubble-badge" id="st-bubble-badge">1</span>
+    </button>
+
+    <!-- Chat panel -->
+    <div id="st-chat-panel" role="dialog" aria-label="ShowTime support chat">
+        <div id="st-chat-header">
+            <div class="st-chat-avatar">🎵</div>
+            <div class="st-chat-header-info">
+                <div class="st-chat-header-name">ShowTime Assistant</div>
+                <div class="st-chat-header-status">Online — ask me anything</div>
+            </div>
+            <button id="st-chat-close" onclick="stChatToggle()" aria-label="Close chat">✕</button>
+        </div>
+
+        <div id="st-chat-messages">
+            <!-- Welcome message injected by JS -->
+        </div>
+
+        <div id="st-chat-suggestions">
+            <button class="st-suggestion" onclick="stSuggest(this)">How does pricing work?</button>
+            <button class="st-suggestion" onclick="stSuggest(this)">What devices does it run on?</button>
+            <button class="st-suggestion" onclick="stSuggest(this)">How does band sync work?</button>
+            <button class="st-suggestion" onclick="stSuggest(this)">Is there a free trial?</button>
+        </div>
+
+        <div id="st-chat-input-row">
+            <textarea id="st-chat-input" rows="1" placeholder="Ask about ShowTime…" 
+                onkeydown="stChatKeydown(event)" oninput="stAutoResize(this)"></textarea>
+            <button id="st-chat-send" onclick="stChatSend()" aria-label="Send">➤</button>
+        </div>
+    </div>
+
+    <script>
+        // ── ShowTime AI Chat Widget ────────────────────────────────────────
+        // Change this to your deployed ShowTime server URL when live.
+        // During local dev, the Flask app runs on port 5000.
+        const CHAT_API_URL = (location.hostname === 'localhost' || location.hostname === '127.0.0.1')
+            ? 'http://localhost:5000/api/support-chat'
+            : 'https://app.itsshowtimes.com.au/api/support-chat';
+
+        let stHistory = [];
+        let stPanelOpen = false;
+        let stGreeted = false;
+
+        function stChatToggle() {
+            stPanelOpen = !stPanelOpen;
+            document.getElementById('st-chat-panel').classList.toggle('open', stPanelOpen);
+            document.getElementById('st-bubble-icon').textContent = stPanelOpen ? '✕' : '💬';
+            document.getElementById('st-bubble-badge').style.display = 'none';
+
+            if (stPanelOpen && !stGreeted) {
+                stGreeted = true;
+                stAddMsg('bot', "Hi! 👋 I'm the ShowTime assistant. Ask me anything about features, pricing, or getting started.");
+                document.getElementById('st-chat-suggestions').style.display = 'flex';
+            }
+            if (stPanelOpen) {
+                setTimeout(() => document.getElementById('st-chat-input').focus(), 220);
+            }
+        }
+
+        function stAddMsg(role, text) {
+            const messages = document.getElementById('st-chat-messages');
+            const div = document.createElement('div');
+            div.className = 'st-msg ' + (role === 'user' ? 'st-msg-user' : 'st-msg-bot');
+            // Render **bold** and basic markdown-style formatting
+            div.innerHTML = text
+                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/\n/g, '<br>');
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+            return div;
+        }
+
+        function stShowTyping() {
+            const messages = document.getElementById('st-chat-messages');
+            const div = document.createElement('div');
+            div.className = 'st-typing';
+            div.id = 'st-typing-indicator';
+            div.innerHTML = '<span></span><span></span><span></span>';
+            messages.appendChild(div);
+            messages.scrollTop = messages.scrollHeight;
+        }
+
+        function stHideTyping() {
+            const t = document.getElementById('st-typing-indicator');
+            if (t) t.remove();
+        }
+
+        async function stChatSend() {
+            const input = document.getElementById('st-chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            input.value = '';
+            stAutoResize(input);
+            document.getElementById('st-chat-send').disabled = true;
+            document.getElementById('st-chat-suggestions').style.display = 'none';
+
+            stAddMsg('user', message);
+            stHistory.push({ role: 'user', content: message });
+            stShowTyping();
+
+            try {
+                const res = await fetch(CHAT_API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ message, history: stHistory.slice(-10) })
+                });
+                const data = await res.json();
+                stHideTyping();
+                const reply = data.reply || "Sorry, I didn't get a response. Please try again.";
+                stAddMsg('bot', reply);
+                stHistory.push({ role: 'assistant', content: reply });
+            } catch (e) {
+                stHideTyping();
+                stAddMsg('bot', "I'm having trouble connecting right now. Please email **support@itsshowtimes.com.au** for help.");
+            }
+
+            document.getElementById('st-chat-send').disabled = false;
+            input.focus();
+        }
+
+        function stSuggest(btn) {
+            document.getElementById('st-chat-input').value = btn.textContent;
+            document.getElementById('st-chat-suggestions').style.display = 'none';
+            stChatSend();
+        }
+
+        function stChatKeydown(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                stChatSend();
+            }
+        }
+
+        function stAutoResize(el) {
+            el.style.height = 'auto';
+            el.style.height = Math.min(el.scrollHeight, 80) + 'px';
+        }
+
+        // Show badge after 8s to draw attention
+        setTimeout(() => {
+            if (!stPanelOpen) {
+                document.getElementById('st-bubble-badge').style.display = 'flex';
+            }
+        }, 8000);
+    </script>
+</body>
+</html>

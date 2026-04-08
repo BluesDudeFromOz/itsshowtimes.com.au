@@ -516,9 +516,12 @@
         .screenshots-tabs {
             display: flex;
             justify-content: center;
-            gap: 12px;
+            gap: 8px;
             margin-bottom: 40px;
             flex-wrap: wrap;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .screenshot-tab {
@@ -1579,104 +1582,129 @@
 
     </section>
     <section class="screenshots" id="screenshots">
-        <div class="section-header">
-            <div class="section-label">Screenshots</div>
-            <h2 class="section-title">See It in Action</h2>
-            <p class="section-description">Real software, real gigs, real chord charts.</p>
-        </div>
+        <div class="section-label">Screenshots</div>
+        <h2>See ShowTime in Action</h2>
+        <p class="section-subtitle">Real screenshots from live performances and rehearsals</p>
 
         <div class="screenshots-tabs">
-            <button class="screenshot-tab active" onclick="showScreenshot('chart')">Chord Chart View</button>
-            <button class="screenshot-tab" onclick="showScreenshot('editor')">Chart Editor</button>
-            <button class="screenshot-tab" onclick="showScreenshot('notation')">Music Notation</button>
-            <button class="screenshot-tab" onclick="showScreenshot('mirror')">Mirror Mode</button>
-            <button class="screenshot-tab" onclick="showScreenshot('media')">Media Manager</button>
-            <button class="screenshot-tab" onclick="showScreenshot('crew')">Crew App</button>
-            <button class="screenshot-tab" onclick="showScreenshot('crewmsg')">Crew Messages</button>
+            <button class="screenshot-tab active" onclick="showScreenshot('chart2p')">2-Page View</button>
+            <button class="screenshot-tab" onclick="showScreenshot('portrait')">Portrait View</button>
+            <button class="screenshot-tab" onclick="showScreenshot('hybrid')">Hybrid Notation</button>
             <button class="screenshot-tab" onclick="showScreenshot('search')">Song Search</button>
-            <button class="screenshot-tab" onclick="showScreenshot('cof')">Circle of Fifths</button>
-            <button class="screenshot-tab" onclick="showScreenshot('metadata')">Song Metadata</button>
-            <button class="screenshot-tab" onclick="showScreenshot('links')">Links &amp; Media</button>
+            <button class="screenshot-tab" onclick="showScreenshot('annotations')">Annotations</button>
+            <button class="screenshot-tab" onclick="showScreenshot('playlists')">Playlists</button>
+            <button class="screenshot-tab" onclick="showScreenshot('metadata')">Song Info</button>
+            <button class="screenshot-tab" onclick="showScreenshot('multimedia')">Media Manager</button>
+            <button class="screenshot-tab" onclick="showScreenshot('visualiser')">Visualiser</button>
+            <button class="screenshot-tab" onclick="showScreenshot('crew')">Crew Messages</button>
+            <button class="screenshot-tab" onclick="showScreenshot('cof')">Circle of Keys</button>
+            <button class="screenshot-tab" onclick="showScreenshot('improv')">Improvisation</button>
+            <button class="screenshot-tab" onclick="showScreenshot('251')">2-5-1</button>
+            <button class="screenshot-tab" onclick="showScreenshot('6251')">6-2-5-1</button>
         </div>
 
         <div class="screenshots-display">
-            <div class="screenshot-panel active" id="ss-chart">
-                <img src="screenshot.png" alt="ShowTime landscape chord chart view — Amazing Grace">
+            <div class="screenshot-panel active" id="ss-chart2p">
+                <img src="static/2_page_chart_view.png" alt="ShowTime 2-page landscape chord chart view">
                 <p class="screenshot-caption">
-                    <strong>Landscape two-column view</strong> — full chord chart with lyrics, ring binder spine,
-                    and the complete toolbar. Supports portrait, landscape, and page-flip book modes.
+                    <strong>2-Page landscape view</strong> — full chord chart spread across the screen with lyrics,
+                    complete toolbar, and ring binder spine. Perfect for larger tablets and desktops.
                 </p>
             </div>
-            <div class="screenshot-panel" id="ss-notation">
-                <img src="music_notation_screenshot.png" alt="ShowTime music notation view side by side with chord chart">
+            <div class="screenshot-panel" id="ss-portrait">
+                <img src="static/portrait_chart_view.png" alt="ShowTime portrait single-page chord chart view">
                 <p class="screenshot-caption">
-                    <strong>Music notation alongside chord charts</strong> — MusicXML sheet music displayed via OpenSheetMusicDisplay, side-by-side with the chord chart. Switch between arrangements with one tap: simplified chart, full notation, or both.
+                    <strong>Portrait single-page view</strong> — optimised for phones and portrait tablets.
+                    Swipe or use foot pedal to turn pages with a smooth page-curl animation.
                 </p>
             </div>
-            <div class="screenshot-panel" id="ss-mirror">
-                <img src="mirror.png" alt="ShowTime mirror mode — mirrored chord chart display">
+            <div class="screenshot-panel" id="ss-hybrid">
+                <img src="static/hybrid_notation_chord_chart_view.png" alt="ShowTime hybrid notation and chord chart view">
                 <p class="screenshot-caption">
-                    <strong>Mirror mode</strong> — flip the entire display horizontally so a performer reading a reflected screen (music stand mirror, teleprompter) sees everything the right way around.
-                </p>
-            </div>
-            <div class="screenshot-panel" id="ss-media">
-                <img src="VideoAndSlidehowManager.png" alt="ShowTime Media Manager — slideshow and video projection settings">
-                <p class="screenshot-caption">
-                    <strong>Media Manager</strong> — upload images and videos for Pre-Show, Intermission, Post-Show, or General use. Set display mode (sequential slideshow, random, video loop), transition effects, duration, and Ken Burns zoom. Roadie opens the projection display on any device via the local network.
-                </p>
-            </div>
-            <div class="screenshot-panel" id="ss-crew">
-                <img src="Crew_ScreenShot.jpg" alt="ShowTime Crew app — mobile crew interface">
-                <p class="screenshot-caption">
-                    <strong>ShowTime Crew mobile app</strong> — crew members scan the QR code and join from any phone. Select your role (Sound, Lighting, Stage Manager, Roadie, Vocalist, General) and receive messages and cues directly from the band leader. No app install — just a browser.
-                </p>
-            </div>
-            <div class="screenshot-panel" id="ss-crewmsg">
-                <img src="message_crew_screenshot.png" alt="ShowTime Send Crew Message dialog">
-                <p class="screenshot-caption">
-                    <strong>Crew messaging</strong> — send instant pre-defined messages to your crew during the show. Colour-coded by urgency: red for critical (foldback issues, FOH problems), yellow for adjustments. Crew members receive alerts on their phone in real time.
-                </p>
-            </div>
-                <img src="screenshot5.png" alt="ShowTime chart editor with full toolbar">
-                <p class="screenshot-caption">
-                    <strong>Built-in chart editor</strong> — font controls, bold/italic/super/subscript, section colour
-                    buttons (Intro, Verse, Chorus, Bridge, Outro, Solo), page breaks, chord/lyric size toggles,
-                    and a music symbols panel with repeats, D.S., D.C., bar counts, and time signatures.
+                    <strong>Hybrid view</strong> — MusicXML sheet music displayed side-by-side with the chord chart.
+                    Switch between simplified chart, full notation, or both with one tap.
                 </p>
             </div>
             <div class="screenshot-panel" id="ss-search">
-                <img src="screenshot6.png" alt="ShowTime song search with QR code to connect band members">
+                <img src="static/search_screen.png" alt="ShowTime song search screen">
                 <p class="screenshot-caption">
-                    <strong>Song search &amp; band connect</strong> — instant search across your entire library with artist
-                    names and playlist usage counts. The QR code on the right lets band members connect
-                    instantly from any phone or tablet — no app install, just scan and open a browser.
+                    <strong>Song search</strong> — instant search across your entire library. Connect band members
+                    via QR code — no app install, just scan and open in any browser.
                 </p>
             </div>
-            <div class="screenshot-panel" id="ss-cof">
-                <img src="screenshot4.png" alt="ShowTime Circle of Fifths popup with improvisation tabs">
+            <div class="screenshot-panel" id="ss-annotations">
+                <img src="static/annotation_view.png" alt="ShowTime annotation view with band notes">
                 <p class="screenshot-caption">
-                    <strong>Circle of Fifths popup</strong> — interactive reference with tabs for Basic, Improvisation,
-                    Major Scale Chords, 2-5-1 and 6-2-5-1 progressions. Note the status bar:
-                    <strong>Connected — Slave Mode</strong>, showing live master/slave sync in action.
+                    <strong>Annotations</strong> — add colour-coded sticky notes for each instrument: keys, bass, guitar,
+                    drums, vocals. Notes float over the chart and are only visible to the relevant player.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-playlists">
+                <img src="static/edit_playlists.png" alt="ShowTime playlist editor">
+                <p class="screenshot-caption">
+                    <strong>Setlist builder</strong> — drag and drop songs into setlists, reorder on the fly,
+                    and navigate the whole show in sequence. Build multiple setlists for different venues or nights.
                 </p>
             </div>
             <div class="screenshot-panel" id="ss-metadata">
-                <img src="screenshot3.png" alt="ShowTime song metadata editor">
+                <img src="static/meta_data_general_info.png" alt="ShowTime song metadata — key, BPM, genre, notes">
                 <p class="screenshot-caption">
-                    <strong>Song metadata</strong> — store key, BPM, time signature, Alesis SR-18 drum machine pattern,
+                    <strong>Song metadata</strong> — store key, BPM, time signature, drum machine pattern,
                     piano setting, genre, and personal notes alongside every song.
                 </p>
             </div>
-            <div class="screenshot-panel" id="ss-links">
-                <img src="screenshot2.png" alt="ShowTime useful links and song media manager">
+            <div class="screenshot-panel" id="ss-multimedia">
+                <img src="static/multimedia_slideshow.png" alt="ShowTime media manager — slideshow settings">
                 <p class="screenshot-caption">
-                    <strong>Links &amp; media per song</strong> — attach YouTube tutorials, Spotify tracks, sheet music PDFs,
-                    or any URL. Upload images and videos for projection during the song.
+                    <strong>Media Manager — Slideshow</strong> — upload images for Pre-Show, Intermission, Post-Show
+                    or per-song projection. Set transition style, duration, and Ken Burns zoom effect.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-visualiser">
+                <img src="static/multimedia_visualiser_backingtrack.png" alt="ShowTime visualiser and backing track settings">
+                <p class="screenshot-caption">
+                    <strong>Visualiser &amp; Backing Track</strong> — choose a visual preset (kaleidoscope, fire, particle storm,
+                    starfield and more) and assign a backing track MP3. The device with the PA connection
+                    claims audio output with one tap.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-crew">
+                <img src="static/message_support.png" alt="ShowTime crew messaging">
+                <p class="screenshot-caption">
+                    <strong>Crew messaging</strong> — send pre-defined colour-coded messages to your sound, lighting,
+                    and stage crew in real time. Crew members join from any phone by scanning a QR code.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-cof">
+                <img src="static/cicrcleofkeys.png" alt="ShowTime circle of keys reference">
+                <p class="screenshot-caption">
+                    <strong>Circle of Keys</strong> — interactive music theory reference built in to the app.
+                    Instantly see related keys, modes, and chords for any key you're playing in.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-improv">
+                <img src="static/improvisation.png" alt="ShowTime improvisation reference guide">
+                <p class="screenshot-caption">
+                    <strong>Improvisation guide</strong> — scales, modes, and soloing ideas for the current key,
+                    displayed as a popup reference panel during performance.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-251">
+                <img src="static/2-5-1_progressions.png" alt="ShowTime 2-5-1 chord progressions">
+                <p class="screenshot-caption">
+                    <strong>2-5-1 Progressions</strong> — instant reference for the most common jazz and pop
+                    chord progressions in every key, always a tap away during a performance.
+                </p>
+            </div>
+            <div class="screenshot-panel" id="ss-6251">
+                <img src="static/6-2-5-1_improv.png" alt="ShowTime 6-2-5-1 improvisation guide">
+                <p class="screenshot-caption">
+                    <strong>6-2-5-1 Improvisation</strong> — extended progression reference with scale and
+                    soloing suggestions for each chord, helping you stay musical through complex changes.
                 </p>
             </div>
         </div>
     </section>
-
     <!-- Testimonials -->
     <section class="testimonials">
         <div class="section-header">
